@@ -196,9 +196,23 @@ def main():
     # Set common X-axis label on the last subplot
     axes[-1].set_xlabel('Quarter')
     
-    # Rotate x-axis labels for better visibility
-    plt.xticks(rotation=45)
+    # Rotate x-axis labels and make them smaller
+    # Also, reduce the density of labels if there are too many
+    for ax in axes:
+        # Get labels and show only every 4th one (once per year) to reduce clutter
+        # but keep the grid for all points
+        xticks = ax.get_xticks()
+        ax.set_xticks(xticks) # Maintain original positions
+        
+    plt.xticks(rotation=45, fontsize=8)
     
+    # Optional: reduce tick density if needed
+    n = len(pivot_df.index)
+    if n > 20:
+        step = n // 15 if n // 15 > 0 else 1
+        axes[-1].set_xticks(range(0, n, step))
+        axes[-1].set_xticklabels(pivot_df.index[::step], rotation=45, fontsize=8)
+
     fig.suptitle('Quarterly Housing Loan Default Rate - Six Special Municipalities\n(六都購置住宅貸款違約率)', fontsize=16)
     plt.tight_layout(rect=[0, 0.03, 1, 0.97]) # Adjust for suptitle
     

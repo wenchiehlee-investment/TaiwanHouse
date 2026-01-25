@@ -196,6 +196,10 @@ def main():
         
         colors = plt.cm.tab10(range(len(cities)))
         
+        # Calculate global Y-axis limit for consistent scaling
+        global_max = pivot_df.max().max()
+        y_limit = max(0.5, global_max * 1.1) # At least 0.5% for visibility of risk line
+        
         for i, city in enumerate(cities):
             ax = axes[i]
             ax.plot(pivot_df.index, pivot_df[city], marker='o', linestyle='-', color=colors[i], label=city)
@@ -205,6 +209,7 @@ def main():
             
             ax.set_title(city, loc='left', fontsize=12, fontweight='bold')
             ax.set_ylabel('Default Rate (%)')
+            ax.set_ylim(0, y_limit) # Set uniform scale
             ax.grid(True, which='both', linestyle='--', alpha=0.7)
             ax.legend(loc='upper right')
             

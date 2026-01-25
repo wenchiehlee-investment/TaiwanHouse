@@ -197,8 +197,7 @@ def main():
         colors = plt.cm.tab10(range(len(cities)))
         
         # Calculate global Y-axis limit for consistent scaling
-        global_max = pivot_df.max().max()
-        y_limit = max(0.5, global_max * 1.1) # At least 0.5% for visibility of risk line
+        y_limit = 2.0 # Fixed max Y at 2% as requested
         
         for i, city in enumerate(cities):
             ax = axes[i]

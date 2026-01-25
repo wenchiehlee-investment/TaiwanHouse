@@ -83,7 +83,7 @@ def main():
         
         # Generate sample data for 6 cities over recent quarters
         quarters = []
-        for y in range(97, 116): # Years 97 to 115 (approx current)
+        for y in range(95, 116): # Years 95 to 115 (approx current)
             for q in range(1, 5):
                 quarters.append(f"{y}Q{q}")
         

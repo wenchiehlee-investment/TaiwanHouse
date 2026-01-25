@@ -21,9 +21,11 @@ TaiwanHouse 的工作空間
     python scripts/fetch_and_plot.py
     ```
 
-3.  **輸出結果：**
-    *   **資料檔案：** `data/csv/housing_loan_default_rate.csv`（若無法存取真實資料，將自動生成範例資料）
-    *   **圖表：** `data/svg/six_cities_default_rate.svg`
+### 輸出結果：
+*   **資料檔案：** `data/csv/housing_loan_default_rate.csv`（來自內政部不動產資訊平台之真實數據）
+*   **圖表：** `data/svg/six_cities_default_rate.svg`
+
+> **注意：** 根據內政部官方提供的整合項目下載區 (E3030)，「購置住宅貸款違約率」的 CSV 資料最早自 **民國 98 年第 1 季 (098Q1)** 開始提供。此時段正值金融海嘯時期，全國違約率高點約為 1.39%。
 
 ![六都購置住宅貸款違約率](data/svg/six_cities_default_rate.svg)
 

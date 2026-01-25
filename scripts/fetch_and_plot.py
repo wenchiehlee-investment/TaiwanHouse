@@ -203,7 +203,19 @@ def main():
         
         for i, city in enumerate(cities):
             ax = axes[i]
-            ax.plot(pivot_df.index, pivot_df[city], marker='o', linestyle='-', color=colors[i], label=city)
+            data = pivot_df[city]
+            
+            # Plot the connecting line
+            ax.plot(pivot_df.index, data, linestyle='-', color=colors[i], alpha=0.6, label=city)
+            
+            # Plot normal points (<= 0.3) as circles
+            normal_mask = data <= 0.3
+            ax.scatter(pivot_df.index[normal_mask], data[normal_mask], marker='o', color=colors[i], s=30)
+            
+            # Plot risk points (> 0.3) as triangles
+            risk_mask = data > 0.3
+            if risk_mask.any():
+                ax.scatter(pivot_df.index[risk_mask], data[risk_mask], marker='^', color=colors[i], s=60, edgecolor='red', linewidth=1, zorder=5)
             
             # Add Risk Alarm Line at 0.3%
             ax.axhline(y=0.3, color='red', linestyle='--', linewidth=1.5, alpha=0.8, label='Risk Alarm (0.3%)')

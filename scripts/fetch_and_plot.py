@@ -165,7 +165,7 @@ def main():
         region_col = [c for c in df.columns if '縣市' in c or 'City' in c or 'Region' in c][0]
         rate_col = [c for c in df.columns if '率' in c or 'Rate' in c][0]
 
-        six_cities = ['台北市', '新北市', '桃園市', '台中市', '台南市', '高雄市']
+        six_cities = ['桃園市', '台北市', '新北市', '台中市', '台南市', '高雄市']
         # Normalized names for consistent processing
         normalized_cities = {
             '臺北市': '台北市', '臺中市': '台中市', '臺南市': '台南市'
@@ -177,6 +177,8 @@ def main():
         df_filtered.loc[:, rate_col] = pd.to_numeric(df_filtered[rate_col], errors='coerce')
         
         pivot_df = df_filtered.pivot_table(index=time_col, columns=region_col, values=rate_col)
+        # Ensure columns follow the specified order
+        pivot_df = pivot_df[six_cities]
         
         def parse_quarter(q_str):
             match = re.match(r'(\d+)Q(\d+)', str(q_str))

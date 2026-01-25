@@ -1,0 +1,43 @@
+﻿name: Monthly Data Update
+
+on:
+  schedule:
+    - cron: '0 0 1 * *'  # Run at 00:00 on day 1 of every month
+  workflow_dispatch:      # Allow manual triggering
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install pandas matplotlib requests selenium webdriver-manager
+
+    - name: Install Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Run update script
+      run: python scripts/fetch_and_plot.py
+
+    - name: Commit and Push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add data/ scripts/
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "data: monthly update of housing loan default rate"
+          git push
+        fi

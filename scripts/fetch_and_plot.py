@@ -120,10 +120,53 @@ def main():
             
         print(f"Downloaded: {downloaded_file}")
         
-        # Move to final location
+        # Move to final location or merge with existing
         final_path = os.path.join(DATA_DIR, "housing_loan_default_rate.csv")
-        shutil.move(downloaded_file, final_path)
-        print(f"Moved file to: {final_path}")
+        
+        if os.path.exists(final_path):
+            print("Merging with existing data...")
+            # Load existing
+            try:
+                df_old = pd.read_csv(final_path, encoding='utf-8')
+            except:
+                try:
+                    df_old = pd.read_csv(final_path, encoding='big5')
+                except:
+                    df_old = pd.read_csv(final_path, encoding='cp950')
+            
+            # Load new
+            try:
+                df_new = pd.read_csv(downloaded_file, encoding='utf-8')
+            except:
+                try:
+                    df_new = pd.read_csv(downloaded_file, encoding='big5')
+                except:
+                    df_new = pd.read_csv(downloaded_file, encoding='cp950')
+            
+            # Combine and drop duplicates based on Time and Region
+            # Identifying columns dynamically for new data
+            time_col_new = [c for c in df_new.columns if '期別' in c or '季' in c or 'Year' in c][0]
+            region_col_new = [c for c in df_new.columns if '縣市' in c or 'City' in c or 'Region' in c][0]
+            
+            # Identify columns for old data (might be different if we renamed them in previous versions)
+            time_col_old = [c for c in df_old.columns if '期別' in c or '季' in c or 'Year' in c][0]
+            region_col_old = [c for c in df_old.columns if '縣市' in c or 'City' in c or 'Region' in c][0]
+            
+            # Standardize column names for merging if they differ
+            df_new = df_new.rename(columns={time_col_new: '資料期別', region_col_new: '縣市'})
+            df_old = df_old.rename(columns={time_col_old: '資料期別', region_col_old: '縣市'})
+            
+            # Merge
+            df_combined = pd.concat([df_old, df_new], ignore_index=True)
+            # Drop duplicates (keep the newer one if there are overlaps)
+            df_combined = df_combined.drop_duplicates(subset=['資料期別', '縣市'], keep='last')
+            
+            # Save combined
+            df_combined.to_csv(final_path, index=False, encoding='utf-8-sig')
+            print(f"Merged data saved to {final_path} (Total rows: {len(df_combined)})")
+        else:
+            shutil.move(downloaded_file, final_path)
+            print(f"Moved file to: {final_path}")
         
         # Clean up temp dir
         shutil.rmtree(DOWNLOAD_DIR)

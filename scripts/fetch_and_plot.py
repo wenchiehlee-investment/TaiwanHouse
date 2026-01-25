@@ -265,10 +265,15 @@ def main():
         
         colors = plt.cm.tab10(range(len(cities)))
         
-        for i, city in enumerate(cities):
-            ax = axes[i]
-            ax.plot(pivot_df.index, pivot_df[city], marker='o', linestyle='-', color=colors[i], label=city)
-            ax.set_title(city, loc='left', fontsize=12, fontweight='bold')
+    for i, city in enumerate(cities):
+        ax = axes[i]
+        # Plot data for this city
+        ax.plot(pivot_df.index, pivot_df[city], marker='o', linestyle='-', color=colors[i], label=city)
+        
+        # Add Risk Alarm Line at 0.3%
+        ax.axhline(y=0.3, color='red', linestyle='--', linewidth=1.5, alpha=0.8, label='Risk Alarm (0.3%)')
+        
+        ax.set_title(city, loc='left', fontsize=12, fontweight='bold')
             ax.set_ylabel('Default Rate (%)')
             ax.grid(True, which='both', linestyle='--', alpha=0.7)
             ax.legend(loc='upper right')

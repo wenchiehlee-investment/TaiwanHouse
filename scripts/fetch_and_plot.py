@@ -82,10 +82,8 @@ def main():
         csv_path = os.path.join(DATA_DIR, "housing_loan_default_rate.csv")
         
         # Generate sample data for 6 cities over recent quarters
-        # Format: 季別, 縣市別, 購置住宅貸款違約率
-        import random
         quarters = []
-        for y in range(108, 114): # Years 108 to 113
+        for y in range(97, 116): # Years 97 to 115 (approx current)
             for q in range(1, 5):
                 quarters.append(f"{y}Q{q}")
         

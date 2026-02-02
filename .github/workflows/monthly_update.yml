@@ -1,8 +1,6 @@
 ﻿name: Monthly Data Update
 
 on:
-  push:
-    branches: [ main ]
   schedule:
     - cron: '0 0 1 * *'  # Run at 00:00 on day 1 of every month
   workflow_dispatch:      # Allow manual triggering

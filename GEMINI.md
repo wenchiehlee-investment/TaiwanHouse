@@ -42,6 +42,8 @@
 
 *   **技術要求：** 腳本需安裝 `selenium` 與 `webdriver-manager` 以處理動態下載。
 
+*   **字體要求：** 為確保 SVG 圖表中的中文能正常顯示，請確認系統已安裝支援繁體中文的字體（例如：Noto Sans CJK TC 或 Microsoft JhengHei）。若運行環境缺少這些字體，圖表中的中文字符可能無法正確顯示。
+
 
 
 *   **語言要求：** 所有報告和 Markdown 檔案（.md）必須使用 **繁體中文 (Traditional Chinese)**。

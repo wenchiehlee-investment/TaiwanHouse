@@ -244,10 +244,10 @@ def main():
             axes[-1].set_xticks(range(0, n, step))
             axes[-1].set_xticklabels(pivot_df.index[::step], rotation=45, fontsize=8)
 
-        fig.suptitle('Quarterly Housing Loan Default Rate - Six Special Municipalities\n(六都購置住宅貸款違約率)', fontsize=16)
+        fig.suptitle('Quarterly Housing Loan Default Rate - Major Cities\n(主要城市購置住宅貸款違約率)', fontsize=16)
         plt.tight_layout(rect=[0, 0.03, 1, 0.97])
         
-        svg_path = os.path.join(SVG_DIR, "six_cities_default_rate.svg")
+        svg_path = os.path.join(SVG_DIR, "major_cities_default_rate.svg")
         plt.savefig(svg_path, format='svg')
         print(f"Saved plot to {svg_path}")
         

@@ -1,49 +1,63 @@
 # TaiwanHouse
-TaiwanHouse 的工作空間
+TaiwanHouse 為台灣房市資料視覺化與監控專案，目前聚焦兩項指標：
+1. 本季購置住宅貸款違約率
+2. 全台建物買賣移轉棟數
 
 ## 授權
+本專案採用 MIT 授權條款，請參閱 `LICENSE`。
 
-本專案採用 MIT 授權條款 - 詳細內容請參閱 [LICENSE](LICENSE) 檔案。
+## 快速開始
+1. 安裝依賴：
+   ```bash
+   pip install pandas matplotlib requests selenium webdriver-manager pytz
+   ```
+2. 更新違約率圖表：
+   ```bash
+   python scripts/fetch_and_plot.py
+   ```
+3. 更新全台移轉棟數監控：
+   ```bash
+   python scripts/monitor_transfer_count.py
+   ```
 
 ## 資料視覺化
 
-本專案包含一個 Python 腳本，用於獲取並視覺化主要城市的 **本季購置住宅貸款違約率**。
+### 資料視覺化- 本季購置住宅貸款違約率
+使用腳本：`scripts/fetch_and_plot.py`
 
-### 使用方法
+輸出結果：
+* **資料檔案：** `data/csv/housing_loan_default_rate.csv`
+* **圖表：** `data/svg/major_cities_default_rate.svg`
 
-1.  **安裝依賴項目：**
-    ```bash
-    pip install requests pandas matplotlib
-    ```
+資料說明：
+* 資料來源：內政部不動產資訊平台整合項目下載區 (E3030)。
+* 資料範圍：依官方提供，最早至民國 98 年第 1 季 (098Q1)。
+* 圖表內容：主要城市（臺北市、新北市、桃園市、新竹市、新竹縣、苗栗縣、臺中市、臺南市、高雄市）之違約率趨勢。
 
-2.  **執行腳本：**
-    ```bash
-    python scripts/fetch_and_plot.py
-    ```
+README 自動更新：`scripts/fetch_and_plot.py` 會更新本節的 `Update time`。
 
-### 輸出結果：
-*   **資料檔案：** `data/csv/housing_loan_default_rate.csv`（來自內政部不動產資訊平台之真實數據）
-*   **圖表：** `data/svg/major_cities_default_rate.svg`
-
-> **注意：** 根據內政部官方提供的整合項目下載區 (E3030)，「購置住宅貸款違約率」的 CSV 資料最早自 **民國 98 年第 1 季 (098Q1)** 開始提供。此時段正值金融海嘯時期，全國違約率高點約為 1.39%。
-
-Update time: 2026-02-06 11:22:10 CST
+Update time: 2026-02-16 15:26:19 CST
 
 ![主要城市購置住宅貸款違約率](data/svg/major_cities_default_rate.svg)
 
-### 圖表說明
-此 SVG 圖表展示了主要城市（臺北市、新北市、桃園市、新竹市、新竹縣、苗栗縣、臺中市、臺南市、高雄市）的購置住宅貸款違約率趨勢：
-*   **X 軸 (橫軸)：** 代表季別（例如 2019Q1）。
-*   **Y 軸 (縱軸)：** 代表違約率百分比 (%)。
-*   **資料點：** 每個圓點代表該季度的數據觀測值。
-*   **折線：** 不同的顏色線條區分不同的城市，方便觀察各都市間的趨勢差異與比較。
+### 資料視覺化- 全台建物買賣移轉棟數
+使用腳本：`scripts/monitor_transfer_count.py`
 
-此圖表由 `scripts/fetch_and_plot.py` 自動生成，利用 `matplotlib` 進行繪製並匯出為向量圖格式 (SVG)，確保在任何縮放比例下都能保持清晰。
+輸出結果：
+* **資料檔案：** `data/csv/taiwan_building_transfer_count.csv`
+* **圖表：** `data/svg/taiwan_building_transfer_count.svg`
+* **監控摘要：** `data/reports/taiwan_building_transfer_monitor.md`
 
-### 腳本詳細說明
-腳本 `scripts/fetch_and_plot.py` 會執行以下操作：
-*   從 `pip.moi.gov.tw` 獲取下載頁面。
-*   定位違約率資料的 CSV 下載連結。
-*   下載 CSV（若伺服器拒絕請求，則自動生成範例資料作為備案）。
-*   過濾出主要城市（臺北市、新北市、桃園市、新竹市、新竹縣、苗栗縣、臺中市、臺南市、高雄市）的資料。
-*   生成時間序列圖並儲存為 SVG 格式。
+監控說明：
+* 資料來源：內政部不動產資訊平台整合項目下載區 (E3030)。
+* 資料處理：優先採用全台列，若無全台列則彙總各地區。
+* 監控內容：最新一期、前一期、去年同期差異。
+
+README 自動更新：`scripts/monitor_transfer_count.py` 會更新本節的 `Update time`。
+
+Update time: 2026-02-16 15:26:19 CST
+
+![全台建物買賣移轉棟數](data/svg/taiwan_building_transfer_count.svg)
+
+## 自動化更新
+GitHub Actions 工作流程 `/.github/workflows/monthly_update.yml` 每月會自動執行兩支腳本，同步更新兩項資料視覺化與相關輸出。

@@ -291,29 +291,70 @@ def main():
 def update_readme_timestamp():
     import pytz
     from datetime import datetime
-    
-    # Get current time in Taipei
+
     taipei_tz = pytz.timezone('Asia/Taipei')
     now = datetime.now(taipei_tz)
     timestamp_str = now.strftime("Update time: %Y-%m-%d %H:%M:%S CST")
-    
+
     readme_path = "README.md"
     if not os.path.exists(readme_path):
         return
-        
+
     with open(readme_path, "r", encoding="utf-8") as f:
         content = f.read()
-    
-    # Target pattern: Any "Update time: ..." line or the line before the SVG
-    svg_marker = "![六都購置住宅貸款違約率]"
-    
-    if "Update time:" in content:
-        # Replace existing timestamp
-        new_content = re.sub(r"Update time: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} CST", timestamp_str, content)
+
+    section_header = "### 資料視覺化- 本季購置住宅貸款違約率"
+    next_section_header = "### 資料視覺化- 全台建物買賣移轉棟數"
+    image_prefix = "![主要城市購置住宅貸款違約率]"
+    update_pattern = r"^Update time: \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} CST$"
+
+    lines = content.splitlines()
+    section_start = None
+    for i, line in enumerate(lines):
+        if line.strip() == section_header:
+            section_start = i
+            break
+
+    if section_start is None:
+        return
+
+    section_end = len(lines)
+    for i in range(section_start + 1, len(lines)):
+        if lines[i].strip() == next_section_header:
+            section_end = i
+            break
+
+    section_lines = lines[section_start:section_end]
+    section_lines = [line for line in section_lines if not re.match(update_pattern, line.strip())]
+
+    image_index = None
+    for idx, line in enumerate(section_lines):
+        if line.strip().startswith(image_prefix):
+            image_index = idx
+            break
+
+    if image_index is not None:
+        section_lines.insert(image_index, "")
+        section_lines.insert(image_index, timestamp_str)
     else:
-        # Insert before the SVG marker
-        new_content = content.replace(svg_marker, f"{timestamp_str}\n\n{svg_marker}")
-    
+        insert_index = len(section_lines)
+        while insert_index > 0 and section_lines[insert_index - 1].strip() == "":
+            insert_index -= 1
+        section_lines.insert(insert_index, "")
+        section_lines.insert(insert_index, timestamp_str)
+
+    normalized_section_lines = []
+    previous_blank = False
+    for line in section_lines:
+        current_blank = line.strip() == ""
+        if current_blank and previous_blank:
+            continue
+        normalized_section_lines.append(line)
+        previous_blank = current_blank
+
+    merged_lines = lines[:section_start] + normalized_section_lines + lines[section_end:]
+    new_content = "\n".join(merged_lines).rstrip() + "\n"
+
     with open(readme_path, "w", encoding="utf-8") as f:
         f.write(new_content)
     print(f"Updated README.md with timestamp: {timestamp_str}")

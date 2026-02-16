@@ -55,7 +55,7 @@ Update time: 2026-02-16 15:26:19 CST
 
 README 自動更新：`scripts/monitor_transfer_count.py` 會更新本節的 `Update time`。
 
-Update time: 2026-02-16 19:24:03 CST
+Update time: 2026-02-16 19:26:14 CST
 
 ![全台建物買賣移轉棟數](data/svg/taiwan_building_transfer_count.svg)
 

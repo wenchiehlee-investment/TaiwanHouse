@@ -479,6 +479,53 @@ def write_unavailable_report(error_message):
     print(f"監控報告已輸出（失敗狀態）：{REPORT_OUTPUT}")
 
 
+def summarize_error(error):
+    text = str(error).strip()
+    if not text:
+        return "未知錯誤"
+    first_line = next((line.strip() for line in text.splitlines() if line.strip()), text)
+    return first_line[:300]
+
+
+def write_unavailable_svg(error_message):
+    configure_cjk_font()
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.axis("off")
+    ax.text(
+        0.5,
+        0.65,
+        "全台建物買賣移轉棟數",
+        ha="center",
+        va="center",
+        fontsize=24,
+        fontweight="bold",
+        color="#0d3b66",
+    )
+    ax.text(
+        0.5,
+        0.48,
+        "目前無法取得資料，已保留上次可用輸出或等待下次更新。",
+        ha="center",
+        va="center",
+        fontsize=14,
+        color="#444444",
+    )
+    ax.text(
+        0.5,
+        0.34,
+        f"錯誤訊息: {error_message}",
+        ha="center",
+        va="center",
+        fontsize=11,
+        color="#666666",
+        wrap=True,
+    )
+    plt.tight_layout()
+    plt.savefig(SVG_OUTPUT, format="svg")
+    plt.close(fig)
+    print(f"圖表已輸出（失敗狀態）：{SVG_OUTPUT}")
+
+
 def update_readme_timestamp():
     readme_path = os.path.join(PROJECT_ROOT, "README.md")
     if not os.path.exists(readme_path):
@@ -558,8 +605,11 @@ def main():
         download_csv()
     except Exception as e:
         if not os.path.exists(CSV_OUTPUT):
-            print(f"警告：無法下載且本地也沒有既有 CSV。{e}")
-            write_unavailable_report(str(e))
+            error_summary = summarize_error(e)
+            print(f"警告：無法下載且本地也沒有既有 CSV。{error_summary}")
+            write_unavailable_report(error_summary)
+            write_unavailable_svg(error_summary)
+            update_readme_timestamp()
             return
         print(f"下載失敗，改用既有資料：{e}")
 

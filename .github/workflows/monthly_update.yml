@@ -70,54 +70,21 @@ jobs:
       run: |
         echo "=== /dev/shm size ==="
         df -h /dev/shm 2>&1 || echo "/dev/shm not available"
-
         echo ""
         echo "=== Container info ==="
         cat /proc/1/cgroup 2>/dev/null | head -5 || echo "no cgroup info"
         echo "Running as: $(whoami) (uid=$(id -u))"
-
         echo ""
         echo "=== Chrome binary ==="
         which google-chrome
         google-chrome --version
-
         echo ""
-        echo "=== ChromeDriver version (if any) ==="
+        echo "=== ChromeDriver ==="
         which chromedriver 2>/dev/null && chromedriver --version 2>/dev/null || echo "chromedriver not in PATH"
-
-        echo ""
-        echo "=== Selenium + webdriver_manager versions ==="
-        python -c "import selenium; print(f'selenium: {selenium.__version__}')"
-        python -c "from webdriver_manager.chrome import ChromeDriverManager; path = ChromeDriverManager().install(); print(f'chromedriver path: {path}')" 2>&1 || echo "webdriver_manager install failed"
-
+        python -c "import selenium; print('selenium:', selenium.__version__)"
         echo ""
         echo "=== Quick Selenium test ==="
-        python -c "
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-opts = Options()
-opts.add_argument('--headless=new')
-opts.add_argument('--no-sandbox')
-opts.add_argument('--disable-dev-shm-usage')
-opts.add_argument('--disable-gpu')
-opts.add_argument('--remote-allow-origins=*')
-try:
-    driver = webdriver.Chrome(options=opts)
-    print(f'SUCCESS: session created, title={driver.title}')
-    driver.quit()
-except Exception as e:
-    print(f'FAILED with built-in driver: {e}')
-    # Try with webdriver_manager
-    try:
-        from selenium.webdriver.chrome.service import Service
-        from webdriver_manager.chrome import ChromeDriverManager
-        svc = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=svc, options=opts)
-        print(f'SUCCESS with webdriver_manager: session created, title={driver.title}')
-        driver.quit()
-    except Exception as e2:
-        print(f'FAILED with webdriver_manager too: {e2}')
-" 2>&1
+        python scripts/test_chrome.py
 
     - name: Diagnose network access to data source
       continue-on-error: true

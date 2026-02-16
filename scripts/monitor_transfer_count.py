@@ -38,6 +38,13 @@ def setup_driver():
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument(
+        "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    )
+    chrome_options.add_argument("--disable-blink-features=AutomationControlled")
 
     prefs = {
         "download.default_directory": DOWNLOAD_DIR,
@@ -236,6 +243,18 @@ def find_download_link(driver):
     return None
 
 
+def is_rejected_page(driver):
+    text = ((driver.page_source or "") + " " + (driver.title or "")).lower()
+    rejected_signals = [
+        "request rejected",
+        "the requested url was rejected",
+        "access denied",
+        "forbidden",
+        "security policy",
+    ]
+    return any(signal in text for signal in rejected_signals)
+
+
 def wait_for_download(timeout=45):
     start = time.time()
     while time.time() - start < timeout:
@@ -283,37 +302,50 @@ def merge_or_replace_source(downloaded_file, output_file):
 
 
 def download_csv():
-    driver = None
-    try:
-        print("初始化 WebDriver...")
-        driver = setup_driver()
-        print(f"前往資料來源：{BASE_URL}")
-        driver.get(BASE_URL)
-        WebDriverWait(driver, 20).until(lambda d: d.find_elements(By.TAG_NAME, "a"))
-
-        target_link = find_download_link(driver)
-        if target_link is None:
-            raise RuntimeError(f"找不到「{TARGET_DATASET_NAME}」CSV 下載連結。")
-
-        clear_download_dir()
-        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_link)
-        time.sleep(0.5)
+    last_error = None
+    for attempt in range(1, 4):
+        driver = None
         try:
-            target_link.click()
-        except Exception:
-            driver.execute_script("arguments[0].click();", target_link)
+            print(f"初始化 WebDriver...（第 {attempt} 次嘗試）")
+            driver = setup_driver()
+            print(f"前往資料來源：{BASE_URL}")
+            driver.get(BASE_URL)
+            WebDriverWait(driver, 25).until(lambda d: d.find_elements(By.TAG_NAME, "a"))
 
-        downloaded_file = wait_for_download()
-        if downloaded_file is None:
-            raise RuntimeError("資料檔下載逾時。")
+            if is_rejected_page(driver):
+                raise RuntimeError("來源網站拒絕請求（Request Rejected / Access Denied）。")
 
-        merge_or_replace_source(downloaded_file, CSV_OUTPUT)
-        print(f"CSV 已更新：{CSV_OUTPUT}")
-    finally:
-        if driver:
-            driver.quit()
-        if os.path.exists(DOWNLOAD_DIR):
-            shutil.rmtree(DOWNLOAD_DIR)
+            target_link = find_download_link(driver)
+            if target_link is None:
+                raise RuntimeError(f"找不到「{TARGET_DATASET_NAME}」CSV 下載連結。")
+
+            clear_download_dir()
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_link)
+            time.sleep(0.8)
+            try:
+                target_link.click()
+            except Exception:
+                driver.execute_script("arguments[0].click();", target_link)
+
+            downloaded_file = wait_for_download()
+            if downloaded_file is None:
+                raise RuntimeError("資料檔下載逾時。")
+
+            merge_or_replace_source(downloaded_file, CSV_OUTPUT)
+            print(f"CSV 已更新：{CSV_OUTPUT}")
+            return
+        except Exception as e:
+            last_error = e
+            print(f"第 {attempt} 次嘗試失敗：{e}")
+            time.sleep(2 * attempt)
+        finally:
+            if driver:
+                driver.quit()
+            if os.path.exists(DOWNLOAD_DIR):
+                shutil.rmtree(DOWNLOAD_DIR)
+
+    if last_error:
+        raise last_error
 
 
 def build_taiwan_series(df):

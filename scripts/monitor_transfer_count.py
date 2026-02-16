@@ -67,6 +67,33 @@ def read_csv_auto(path):
     raise RuntimeError(f"無法讀取 CSV：{path}")
 
 
+def read_table_auto(path):
+    ext = os.path.splitext(path)[1].lower()
+    if ext in (".csv", ".txt"):
+        return read_csv_auto(path)
+
+    if ext in (".xlsx", ".xls"):
+        excel_engines = ("openpyxl", "xlrd", None)
+        for engine in excel_engines:
+            try:
+                if engine is None:
+                    return pd.read_excel(path)
+                return pd.read_excel(path, engine=engine)
+            except Exception:
+                continue
+        raise RuntimeError(f"無法讀取 Excel：{path}")
+
+    # Unknown extension, try CSV then Excel as fallback.
+    try:
+        return read_csv_auto(path)
+    except Exception:
+        pass
+    try:
+        return pd.read_excel(path)
+    except Exception as e:
+        raise RuntimeError(f"無法解析資料檔：{path}") from e
+
+
 def detect_period_column(columns):
     keywords = ("期別", "年月", "月份", "日期", "時間", "month", "date", "year")
     for col in columns:
@@ -154,7 +181,7 @@ def find_download_link(driver):
     links = driver.find_elements(By.TAG_NAME, "a")
     best_link = None
     best_score = -1
-    csv_candidates = []
+    candidates = []
 
     for link in links:
         title = (link.get_attribute("title") or "").strip()
@@ -167,12 +194,10 @@ def find_download_link(driver):
         except Exception:
             row_text = ""
 
-        is_csv = ("csv" in text.lower()) or (".csv" in href.lower()) or ("csv" in href.lower())
-        if not is_csv:
-            continue
-
         haystack = " ".join([title, text, href, aria, row_text])
-        csv_candidates.append(haystack)
+        if not haystack.strip():
+            continue
+        candidates.append(haystack)
 
         score = 0
         if TARGET_DATASET_NAME in haystack:
@@ -189,6 +214,10 @@ def find_download_link(driver):
             score += 15
         if "全台" in haystack or "全國" in haystack:
             score += 8
+        if "csv" in haystack.lower():
+            score += 10
+        if ".xls" in haystack.lower() or ".xlsx" in haystack.lower():
+            score += 8
 
         if score > best_score:
             best_score = score
@@ -197,12 +226,12 @@ def find_download_link(driver):
     if best_link is not None and best_score >= 30:
         return best_link
 
-    if csv_candidates:
-        print("未匹配到目標資料，頁面中的 CSV 候選項目如下（前 10 筆）：")
-        for item in csv_candidates[:10]:
+    if candidates:
+        print("未匹配到目標資料，頁面候選項目如下（前 10 筆）：")
+        for item in candidates[:10]:
             print(f"- {item}")
     else:
-        print("頁面中沒有偵測到 CSV 連結。")
+        print("頁面中沒有可用的連結候選。")
 
     return None
 
@@ -213,7 +242,7 @@ def wait_for_download(timeout=45):
         files = [
             f
             for f in os.listdir(DOWNLOAD_DIR)
-            if f.lower().endswith(".csv") and not f.endswith(".crdownload")
+            if f.lower().endswith((".csv", ".xls", ".xlsx")) and not f.endswith(".crdownload")
         ]
         if files:
             files.sort(
@@ -225,17 +254,19 @@ def wait_for_download(timeout=45):
     return None
 
 
-def merge_or_replace_csv(downloaded_file, output_file):
+def merge_or_replace_source(downloaded_file, output_file):
+    df_new = read_table_auto(downloaded_file)
+
     if not os.path.exists(output_file):
-        shutil.move(downloaded_file, output_file)
+        df_new.to_csv(output_file, index=False, encoding="utf-8-sig")
+        os.remove(downloaded_file)
         return
 
-    df_old = read_csv_auto(output_file)
-    df_new = read_csv_auto(downloaded_file)
+    df_old = read_table_auto(output_file)
 
     if set(df_old.columns) != set(df_new.columns):
-        os.remove(output_file)
-        shutil.move(downloaded_file, output_file)
+        df_new.to_csv(output_file, index=False, encoding="utf-8-sig")
+        os.remove(downloaded_file)
         return
 
     df_all = pd.concat([df_old, df_new], ignore_index=True)
@@ -267,13 +298,16 @@ def download_csv():
         clear_download_dir()
         driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target_link)
         time.sleep(0.5)
-        target_link.click()
+        try:
+            target_link.click()
+        except Exception:
+            driver.execute_script("arguments[0].click();", target_link)
 
         downloaded_file = wait_for_download()
         if downloaded_file is None:
-            raise RuntimeError("CSV 下載逾時。")
+            raise RuntimeError("資料檔下載逾時。")
 
-        merge_or_replace_csv(downloaded_file, CSV_OUTPUT)
+        merge_or_replace_source(downloaded_file, CSV_OUTPUT)
         print(f"CSV 已更新：{CSV_OUTPUT}")
     finally:
         if driver:

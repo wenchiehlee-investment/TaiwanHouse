@@ -23,7 +23,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pandas matplotlib requests selenium webdriver-manager pytz
+        pip install pandas matplotlib requests selenium webdriver-manager pytz openpyxl xlrd
 
     - name: Install Chrome
       run: |

@@ -89,15 +89,19 @@ jobs:
 
     - name: Run update script (housing loan default rate)
       id: fetch_plot
-      run: |
-        python scripts/fetch_and_plot.py; echo "FETCH_EXIT=$?" >> $GITHUB_ENV
       continue-on-error: true
+      run: |
+        set +e
+        python scripts/fetch_and_plot.py
+        echo "FETCH_EXIT=$?" >> $GITHUB_ENV
 
     - name: Run transfer monitor script
       id: transfer_monitor
-      run: |
-        python scripts/monitor_transfer_count.py; echo "MONITOR_EXIT=$?" >> $GITHUB_ENV
       continue-on-error: true
+      run: |
+        set +e
+        python scripts/monitor_transfer_count.py
+        echo "MONITOR_EXIT=$?" >> $GITHUB_ENV
 
     - name: Report script results
       run: |

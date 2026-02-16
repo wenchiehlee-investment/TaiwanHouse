@@ -1,8 +1,14 @@
 # 全台建物買賣移轉棟數監控
 
-- 更新時間：2026-02-16 21:30:13 CST
-- 狀態：更新失敗（使用既有資料也不可用）
-- 錯誤訊息：Message: session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause.; For documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#sessionnotcreatedexception
+- 更新時間：2026-02-16 20:31:21 CST
+- 最新期別：2025Q4
+- 最新棟數：66,332
+- 與前一期差異：+1,507 棟 (+2.32%)
+- 與去年同期差異：-13,065 棟 (-16.46%)
+
+## 檔案位置
+- CSV：`data\csv\taiwan_building_transfer_count.csv`
+- SVG：`data\svg\taiwan_building_transfer_count.svg`
 
 ## 資料來源
 - 內政部不動產資訊平台：https://pip.moi.gov.tw/Publicize/Info/E3030

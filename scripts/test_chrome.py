@@ -1,21 +1,21 @@
 """Diagnostic script: test Chrome + Selenium in current environment."""
 import sys
 
-# Test 1: Selenium built-in driver management
-print("=== Test 1: Selenium built-in driver ===")
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
+opts = Options()
+opts.add_argument("--headless=new")
+opts.add_argument("--no-sandbox")
+opts.add_argument("--disable-dev-shm-usage")
+opts.add_argument("--disable-gpu")
+opts.add_argument("--remote-allow-origins=*")
+
+# Test 1: with --allowed-ips= (fix for Docker bind() failure)
+print("=== Test 1: Selenium built-in driver + --allowed-ips ===")
 try:
-    from selenium import webdriver
-    from selenium.webdriver.chrome.options import Options
-    from selenium.webdriver.chrome.service import Service
-
-    opts = Options()
-    opts.add_argument("--headless=new")
-    opts.add_argument("--no-sandbox")
-    opts.add_argument("--disable-dev-shm-usage")
-    opts.add_argument("--disable-gpu")
-    opts.add_argument("--remote-allow-origins=*")
-
-    svc = Service(log_output=sys.stdout)
+    svc = Service(service_args=["--allowed-ips=", "--allowed-origins=*"])
     driver = webdriver.Chrome(service=svc, options=opts)
     print(f"SUCCESS: session created, title={driver.title!r}")
     driver.quit()
@@ -23,15 +23,13 @@ try:
 except Exception as e:
     print(f"FAILED: {e}")
 
-# Test 2: webdriver_manager
-print("\n=== Test 2: webdriver_manager ===")
+# Test 2: webdriver_manager + --allowed-ips
+print("\n=== Test 2: webdriver_manager + --allowed-ips ===")
 try:
     from webdriver_manager.chrome import ChromeDriverManager
-
     path = ChromeDriverManager().install()
     print(f"chromedriver path: {path}")
-
-    svc = Service(executable_path=path, log_output=sys.stdout)
+    svc = Service(executable_path=path, service_args=["--allowed-ips=", "--allowed-origins=*"])
     driver = webdriver.Chrome(service=svc, options=opts)
     print(f"SUCCESS: session created, title={driver.title!r}")
     driver.quit()
@@ -39,7 +37,7 @@ try:
 except Exception as e:
     print(f"FAILED: {e}")
 
-# Test 3: Try --headless (old style) instead of --headless=new
+# Test 3: old --headless flag
 print("\n=== Test 3: old --headless flag ===")
 try:
     opts2 = Options()
@@ -48,8 +46,8 @@ try:
     opts2.add_argument("--disable-dev-shm-usage")
     opts2.add_argument("--disable-gpu")
     opts2.add_argument("--remote-allow-origins=*")
-
-    driver = webdriver.Chrome(options=opts2)
+    svc = Service(service_args=["--allowed-ips=", "--allowed-origins=*"])
+    driver = webdriver.Chrome(service=svc, options=opts2)
     print(f"SUCCESS: session created with old --headless, title={driver.title!r}")
     driver.quit()
     sys.exit(0)

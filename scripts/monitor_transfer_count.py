@@ -67,12 +67,18 @@ def setup_driver():
     }
     chrome_options.add_experimental_option("prefs", prefs)
 
+    service = Service(
+        service_args=["--allowed-ips=", "--allowed-origins=*"],
+    )
     try:
         # Selenium 4.6+ has built-in driver management
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
     except Exception:
         # Fallback to webdriver_manager
-        service = Service(ChromeDriverManager().install())
+        service = Service(
+            executable_path=ChromeDriverManager().install(),
+            service_args=["--allowed-ips=", "--allowed-origins=*"],
+        )
         driver = webdriver.Chrome(service=service, options=chrome_options)
 
     if HAS_STEALTH:

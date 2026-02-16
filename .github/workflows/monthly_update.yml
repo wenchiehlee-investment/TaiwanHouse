@@ -30,12 +30,14 @@ jobs:
         DEBIAN_FRONTEND: noninteractive
         TMPDIR: /var/tmp
       run: |
-        # Wait for any existing apt/dpkg locks to be released
-        for i in $(seq 1 30); do
-          if ! sudo flock -n /var/lib/dpkg/lock-frontend true 2>/dev/null; then
-            echo "Waiting for dpkg lock (attempt $i/30)..."
+        # Wait for any existing apt/dpkg locks to be released (up to 120s)
+        echo "Checking for dpkg locks..."
+        for i in $(seq 1 60); do
+          if sudo fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; then
+            echo "Waiting for dpkg lock to be released (attempt $i/60)..."
             sleep 2
           else
+            echo "dpkg lock is free."
             break
           fi
         done
@@ -43,14 +45,14 @@ jobs:
         if ! command -v google-chrome &> /dev/null; then
           echo "Chrome not found, installing..."
           wget -q -O /var/tmp/google-chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo dpkg -i /var/tmp/google-chrome.deb 2>&1 || true
-          sudo apt-get install -f -y 2>&1
+          sudo -E dpkg -i /var/tmp/google-chrome.deb 2>&1 || true
+          sudo -E apt-get install -f -y -o DPkg::Lock::Timeout=120 2>&1
           rm -f /var/tmp/google-chrome.deb
           google-chrome --version
         else
           echo "Chrome already installed: $(google-chrome --version)"
         fi
-        sudo apt-get install -y fonts-noto-cjk fontconfig 2>/dev/null || true
+        sudo -E apt-get install -y -o DPkg::Lock::Timeout=120 fonts-noto-cjk fontconfig 2>/dev/null || true
         fc-cache -f -v 2>/dev/null || true
 
     - name: Diagnose network access to data source

@@ -36,7 +36,7 @@ TaiwanHouse 為台灣房市資料視覺化與監控專案，目前聚焦兩項�
 
 README 自動更新：`scripts/fetch_and_plot.py` 會更新本節的 `Update time`。
 
-Update time: 2026-02-16 15:26:19 CST
+Update time: 2026-02-16 20:14:28 CST
 
 ![主要城市購置住宅貸款違約率](data/svg/major_cities_default_rate.svg)
 
@@ -57,7 +57,7 @@ Update time: 2026-02-16 15:26:19 CST
 
 README 自動更新：`scripts/monitor_transfer_count.py` 會更新本節的 `Update time`。
 
-Update time: 2026-02-16 19:40:15 CST
+Update time: 2026-02-16 20:14:36 CST
 
 ![全台建物買賣移轉棟數](data/svg/taiwan_building_transfer_count.svg)
 

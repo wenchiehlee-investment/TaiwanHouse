@@ -130,12 +130,14 @@ def _fetch_type_cities(type_code, ym_start="09801", ym_end=None):
 
         try:
             count = int(float(parts[1].strip().strip('"')))
-            area  = float(parts[2].strip().strip('"')) if len(parts) > 2 else 0.0
+            area_m2  = float(parts[2].strip().strip('"')) if len(parts) > 2 else 0.0
+            # 轉換為坪 (1 平方公尺 = 0.3025 坪)
+            area_ping = round(area_m2 * 0.3025, 2)
         except (ValueError, TypeError):
             count = 0
-            area  = 0.0
+            area_ping  = 0.0
 
-        result.setdefault(key, {})[city] = (count, area)
+        result.setdefault(key, {})[city] = (count, area_ping)
 
     return result
 
@@ -167,14 +169,14 @@ def download_data():
                 "period": period,
                 "city":   city,
                 "買賣_棟數":   raw["買賣"].get(period, {}).get(city, (0, 0))[0],
-                "買賣_面積":   raw["買賣"].get(period, {}).get(city, (0, 0))[1],
+                "買賣_坪數":   raw["買賣"].get(period, {}).get(city, (0, 0))[1],
                 "拍賣_棟數":   raw["拍賣"].get(period, {}).get(city, (0, 0))[0],
-                "拍賣_面積":   raw["拍賣"].get(period, {}).get(city, (0, 0))[1],
+                "拍賣_坪數":   raw["拍賣"].get(period, {}).get(city, (0, 0))[1],
                 "繼承_棟數":   raw["繼承"].get(period, {}).get(city, (0, 0))[0],
-                "繼承_面積":   raw["繼承"].get(period, {}).get(city, (0, 0))[1],
+                "繼承_坪數":   raw["繼承"].get(period, {}).get(city, (0, 0))[1],
                 "贈與_棟數":   (raw["贈與"].get(period, {}).get(city, (0, 0))[0]
                                + raw["夫妻贈與"].get(period, {}).get(city, (0, 0))[0]),
-                "贈與_面積":   (raw["贈與"].get(period, {}).get(city, (0, 0))[1]
+                "贈與_坪數":   (raw["贈與"].get(period, {}).get(city, (0, 0))[1]
                                + raw["夫妻贈與"].get(period, {}).get(city, (0, 0))[1]),
             })
 

@@ -201,6 +201,12 @@ def download_csv():
                 df_combined = pd.concat([df_old, df_new], ignore_index=True)
                 df_combined = df_combined.drop_duplicates(subset=['資料期別', '縣市'], keep='last')
 
+                # Add timestamps for freshness tracking
+                import datetime
+                process_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                df_combined["download_timestamp"] = process_ts
+                df_combined["process_timestamp"] = process_ts
+
                 df_combined.to_csv(CSV_OUTPUT, index=False, encoding='utf-8-sig')
                 print(f"合併完成：{CSV_OUTPUT}（共 {len(df_combined)} 筆）")
             else:

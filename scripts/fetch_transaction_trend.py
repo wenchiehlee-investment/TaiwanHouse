@@ -94,7 +94,7 @@ def _current_ym_end():
 
 
 def _fetch_type_cities(type_code, ym_start="09801", ym_end=None):
-    """Return {period: {city: count}} for all valid cities, one type."""
+    """Return {period: {city: (count, area)}} for all valid cities, one type."""
     if ym_end is None:
         ym_end = _current_ym_end()
     url = (
@@ -129,11 +129,13 @@ def _fetch_type_cities(type_code, ym_start="09801", ym_end=None):
         key = f"{roc_y:03d}Q{q}" if roc_y < 100 else f"{roc_y}Q{q}"
 
         try:
-            val = int(float(parts[1].strip().strip('"')))
+            count = int(float(parts[1].strip().strip('"')))
+            area  = float(parts[2].strip().strip('"')) if len(parts) > 2 else 0.0
         except (ValueError, TypeError):
-            val = 0
+            count = 0
+            area  = 0.0
 
-        result.setdefault(key, {})[city] = val
+        result.setdefault(key, {})[city] = (count, area)
 
     return result
 
@@ -164,11 +166,16 @@ def download_data():
             rows.append({
                 "period": period,
                 "city":   city,
-                "買賣":   raw["買賣"].get(period, {}).get(city, 0),
-                "拍賣":   raw["拍賣"].get(period, {}).get(city, 0),
-                "繼承":   raw["繼承"].get(period, {}).get(city, 0),
-                "贈與":   (raw["贈與"].get(period, {}).get(city, 0)
-                          + raw["夫妻贈與"].get(period, {}).get(city, 0)),
+                "買賣_棟數":   raw["買賣"].get(period, {}).get(city, (0, 0))[0],
+                "買賣_面積":   raw["買賣"].get(period, {}).get(city, (0, 0))[1],
+                "拍賣_棟數":   raw["拍賣"].get(period, {}).get(city, (0, 0))[0],
+                "拍賣_面積":   raw["拍賣"].get(period, {}).get(city, (0, 0))[1],
+                "繼承_棟數":   raw["繼承"].get(period, {}).get(city, (0, 0))[0],
+                "繼承_面積":   raw["繼承"].get(period, {}).get(city, (0, 0))[1],
+                "贈與_棟數":   (raw["贈與"].get(period, {}).get(city, (0, 0))[0]
+                               + raw["夫妻贈與"].get(period, {}).get(city, (0, 0))[0]),
+                "贈與_面積":   (raw["贈與"].get(period, {}).get(city, (0, 0))[1]
+                               + raw["夫妻贈與"].get(period, {}).get(city, (0, 0))[1]),
             })
 
     df = pd.DataFrame(rows)
@@ -218,10 +225,10 @@ def plot():
         city_df = city_df.set_index("period").reindex(all_periods, fill_value=0)
 
         x      = [period_idx[p] for p in all_periods]
-        y_sale = city_df["買賣"].values   / 1_000
-        y_auct = city_df["拍賣"].values   / 1_000
-        y_inh  = city_df["繼承"].values   / 1_000
-        y_gift = city_df["贈與"].values   / 1_000
+        y_sale = city_df["買賣_棟數"].values   / 1_000
+        y_auct = city_df["拍賣_棟數"].values   / 1_000
+        y_inh  = city_df["繼承_棟數"].values   / 1_000
+        y_gift = city_df["贈與_棟數"].values   / 1_000
 
         ax.stackplot(
             x, y_sale, y_auct, y_inh, y_gift,

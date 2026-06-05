@@ -1,7 +1,8 @@
 group:
-  - repository: wenchiehlee-money/biztrends.TW
-    files:
+  - files:
       - source: data/csv/housing_loan_default_rate.csv
         dest: data/TaiwanHouse/housing_loan_default_rate.csv
       - source: raw_column_definition_TaiwanHouse.md
         dest: definitions/raw_column_definition_TaiwanHouse.md
+    repos: |
+        wenchiehlee-money/biztrends.TW

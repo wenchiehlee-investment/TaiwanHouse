@@ -203,7 +203,7 @@ def download_csv():
 
                 # Add timestamps for freshness tracking
                 import datetime
-                process_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                process_ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S CST")
                 df_combined["download_timestamp"] = process_ts
                 df_combined["process_timestamp"] = process_ts
 

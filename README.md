@@ -55,7 +55,8 @@ Update time: 2026-05-23 22:03:33 CST
 README 自動更新：`scripts/fetch_transaction_trend.py` 會更新本節的 `Update time`。
 
 
-Update time: 2026-05-24 12:50:13 CST
+
+Update time: 2026-07-02 11:49:32 CST
 
 ![建物所有權登記堆疊趨勢](data/svg/building_ownership_trend.svg)
 
@@ -72,7 +73,8 @@ Update time: 2026-05-24 12:50:13 CST
 
 README 自動更新：`scripts/fetch_transaction_trend.py` 會更新本節的 `Update time`。
 
-Update time: 2026-05-24 12:50:13 CST
+
+Update time: 2026-07-02 11:49:32 CST
 
 ![建物所有權登記面積趨勢](data/svg/building_ownership_trend_area.svg)
 
